@@ -144,7 +144,9 @@ sherlock-rag-chatbot/
 
 ## 📄 License
 
-MIT — see [LICENSE](./LICENSE).
+MIT — see [<p align="center">
+    <a href="YOUR_STREAMLIT_URL"><img src="https://img.shields.io/badge/🚀_Live_Demo-Try_it-FF4B4B?style=for-the-badge" alt="Live Demo"></a>
+  </p>](./LICENSE).
 
 ---
 
