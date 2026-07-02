@@ -1,0 +1,6 @@
+﻿.env
+.streamlit/
+embedding_model/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
