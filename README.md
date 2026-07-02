@@ -1,6 +1,7 @@
 # 🕵️ Sherlock Holmes RAG Chatbot
+
 <p align="center">
-  <a href="YOUR_STREAMLIT_URL"><img src="https://img.shields.io/badge/🚀_Live_Demo-Try_it-FF4B4B?style=for-the-badge" alt="Live Demo"></a>
+  <a href="https://sherlock-rag-chatbot-pu2gbc9xtveh2wmgnrau2b.streamlit.app"><img src="https://img.shields.io/badge/🚀_Live_Demo-Try_it-FF4B4B?style=for-the-badge" alt="Live Demo"></a>
 </p>
 
 > A conversational chatbot that answers questions about *The Adventures of Sherlock Holmes* — grounded in the actual text of the book, not the LLM's memory.
@@ -11,8 +12,6 @@
   <img src="https://img.shields.io/badge/LlamaIndex-4B8BBE?logo=llama&logoColor=white" alt="LlamaIndex">
   <img src="https://img.shields.io/badge/Groq-F55036?logo=groq&logoColor=white" alt="Groq">
   <img src="https://img.shields.io/badge/HuggingFace-FFD21E?logo=huggingface&logoColor=black" alt="HuggingFace">
-  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
 </p>
 
 ---
@@ -70,7 +69,6 @@ flowchart LR
 - 📖 **Source citations** — every answer shows the retrieved chunks with relevance scores
 - ⚙️ **Live tuning** — adjust top-k and temperature from the sidebar
 - 🔒 **Grounded answers** — the bot refuses to guess when the book has no answer
-- 🐳 **Docker-ready** — optional Dockerfile for self-hosted deployment
 
 ---
 
@@ -122,7 +120,6 @@ sherlock-rag-chatbot/
 ├── streamlit_app.py            # The Streamlit UI
 ├── sherlock_rag_chatbot.ipynb  # Annotated walkthrough of the RAG build
 ├── requirements.txt            # Python dependencies
-├── Dockerfile                  # Optional self-hosted deployment
 ├── data/
 │   └── sherlock_clean.txt      # Cleaned book text (Gutenberg boilerplate stripped)
 └── vector_index/               # Pre-built LlamaIndex store
@@ -142,12 +139,6 @@ sherlock-rag-chatbot/
 ## 📚 Data
 
 *The Adventures of Sherlock Holmes* by Sir Arthur Conan Doyle — [Project Gutenberg #1661](https://www.gutenberg.org/ebooks/1661). Public domain.
-
----
-
-## 📄 License
-
-MIT — see [LICENSE](./LICENSE).
 
 ---
 
