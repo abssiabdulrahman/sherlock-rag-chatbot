@@ -1,4 +1,7 @@
 # 🕵️ Sherlock Holmes RAG Chatbot
+<p align="center">
+  <a href="YOUR_STREAMLIT_URL"><img src="https://img.shields.io/badge/🚀_Live_Demo-Try_it-FF4B4B?style=for-the-badge" alt="Live Demo"></a>
+</p>
 
 > A conversational chatbot that answers questions about *The Adventures of Sherlock Holmes* — grounded in the actual text of the book, not the LLM's memory.
 
@@ -144,9 +147,7 @@ sherlock-rag-chatbot/
 
 ## 📄 License
 
-MIT — see [<p align="center">
-    <a href="YOUR_STREAMLIT_URL"><img src="https://img.shields.io/badge/🚀_Live_Demo-Try_it-FF4B4B?style=for-the-badge" alt="Live Demo"></a>
-  </p>](./LICENSE).
+MIT — see [LICENSE](./LICENSE).
 
 ---
 
