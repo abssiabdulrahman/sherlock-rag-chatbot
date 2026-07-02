@@ -7,9 +7,6 @@ Prerequisites:
        GROQ_API_KEY = "your_key_here"
 3. Run: `streamlit run streamlit_sherlock_app.py`
 """
-import streamlit as st
-st.write("✅ App started")  # debug line — remove later
-# ... rest of your original code
 
 from typing import Any
 
