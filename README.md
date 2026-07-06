@@ -4,7 +4,7 @@
   <a href="https://sherlock-rag-chatbot-pu2gbc9xtveh2wmgnrau2b.streamlit.app"><img src="https://img.shields.io/badge/🚀_Live_Demo-Try_it-FF4B4B?style=for-the-badge" alt="Live Demo"></a>
 </p>
 
-> A conversational chatbot that answers questions about *The Adventures of Sherlock Holmes* — grounded in the actual text of the book, not the LLM's memory.
+> A pilot-hardened conversational chatbot that answers questions about *The Adventures of Sherlock Holmes* — grounded in the actual text of the book, with source citations you can verify.
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python">
@@ -18,14 +18,14 @@
 
 ## 🎯 What it does
 
-Ask the bot anything about the twelve stories in Conan Doyle's *Adventures of Sherlock Holmes* — plots, characters, motives, quotes, red herrings — and it answers using only passages retrieved from the actual book, with sources you can inspect.
+Ask the bot anything about the twelve stories in Conan Doyle's *Adventures of Sherlock Holmes* — plots, characters, motives, quotes, red herrings — and it answers using only passages retrieved from the actual book, citing which story the answer came from.
 
 Example questions:
 - *"Who is Irene Adler and why does Holmes remember her?"*
 - *"What was the trick behind The Red-Headed League?"*
 - *"How did Holmes solve the Speckled Band mystery?"*
 
-Follow-up questions work too — the bot has conversational memory.
+Follow-up questions work naturally — the bot has conversational memory and stays locked to the story you were discussing.
 
 ---
 
@@ -33,21 +33,22 @@ Follow-up questions work too — the bot has conversational memory.
 
 ```mermaid
 flowchart LR
-    A[📖 Sherlock Holmes<br/>Project Gutenberg] --> B[✂️ Chunk<br/>~512 tokens]
-    B --> C[🔢 Embed<br/>MiniLM-L6-v2]
+    A[📖 Sherlock Holmes<br/>Project Gutenberg] --> B[✂️ Split into 12 stories<br/>+ tag with metadata]
+    B --> C[🔢 Embed chunks<br/>MiniLM-L6-v2]
     C --> D[(🗂️ Vector Index)]
 
-    Q[❓ User Question] --> E[🔢 Embed Question]
-    E --> F[🔍 Retrieve Top-K<br/>similar chunks]
+    Q[❓ User Question] --> R[✍️ Rewrite<br/>with chat history]
+    R --> E[🔢 Embed Question]
+    E --> F[🔍 Retrieve Top-K<br/>+ relevance floor]
     D --> F
     F --> G[🧠 Llama 3.3 70B<br/>via Groq]
     Q --> G
-    G --> H[💬 Grounded Answer<br/>+ source citations]
+    G --> H[💬 Grounded Answer<br/>+ story citations]
 ```
 
-1. **Index time (once)** — The book is split into overlapping chunks. Each chunk is embedded into a 384-dimensional vector and stored on disk.
-2. **Query time** — The user's question is embedded, the top-k most similar chunks are retrieved via cosine similarity.
-3. **Answer time** — The LLM receives the question + retrieved chunks + conversation history and writes an answer grounded in the retrieved text.
+1. **Index time** — The book is split into its 12 individual stories, each tagged with metadata. Chunks are embedded into 384-dim vectors and stored on disk.
+2. **Query time** — Vague follow-ups are rewritten into standalone queries using conversation history. The rewritten query is embedded, top-k chunks retrieved via cosine similarity, and low-relevance retrievals are rejected outright.
+3. **Answer time** — The LLM receives the question + retrieved chunks + conversation history + a strict grounding prompt, and writes an answer citing which story each chunk came from.
 
 ---
 
@@ -55,9 +56,10 @@ flowchart LR
 
 | Component | Purpose | Why this choice |
 |---|---|---|
-| **Groq — Llama 3.3 70B** | LLM inference | Free tier, fastest inference available |
+| **Groq — Llama 3.3 70B** | LLM inference | Free tier, ~500 tokens/sec — fastest inference available |
 | **LlamaIndex** | RAG orchestration | Purpose-built for RAG, minimal boilerplate |
-| **HuggingFace `all-MiniLM-L6-v2`** | Text embeddings | Runs locally, small (~90 MB), strong on English prose |
+| **`CondensePlusContextChatEngine`** | Query rewriting | Fixes conversational drift on vague follow-ups |
+| **HuggingFace `all-MiniLM-L6-v2`** | Text embeddings | Runs locally, 90 MB, strong on English prose |
 | **Streamlit** | Web UI | One-file Python → shareable web app |
 | **Project Gutenberg** | Source text | Public domain — safely redistributable |
 
@@ -65,10 +67,14 @@ flowchart LR
 
 ## ✨ Features
 
-- 💬 **Conversational memory** — follow-up questions work naturally
-- 📖 **Source citations** — every answer shows the retrieved chunks with relevance scores
+- 💬 **Conversational memory** — follow-ups work naturally, locked to the story being discussed
+- ✍️ **Query rewriting** — vague messages like *"tell me more"* are expanded into full queries before retrieval
+- 🎯 **Relevance floor** — bot refuses to answer when retrieval quality is too low, instead of guessing
+- 📖 **Story-tagged citations** — every source shows which of the 12 stories it came from, with relevance scores
+- 🧭 **Smart disambiguation** — ambiguous questions get clarification requests rather than random answers
 - ⚙️ **Live tuning** — adjust top-k and temperature from the sidebar
-- 🔒 **Grounded answers** — the bot refuses to guess when the book has no answer
+- 💡 **Suggested questions** — quick-start buttons so demos never begin with a blank chat
+- 🔒 **Grounded answers** — strict system prompt prevents the LLM from using outside knowledge
 
 ---
 
@@ -109,7 +115,7 @@ Open [http://localhost:8501](http://localhost:8501).
 
 ## 📓 Notebook
 
-The full RAG pipeline is documented step-by-step in [`sherlock_rag_chatbot.ipynb`](./sherlock_rag_chatbot.ipynb) — read this if you want to understand every design decision (chunk size, overlap, top-k, prompt engineering, memory limits).
+The full RAG pipeline is documented step-by-step in [`sherlock_rag_chatbot.ipynb`](./sherlock_rag_chatbot.ipynb) — read this if you want to understand every design decision (chunk size, overlap, top-k, prompt engineering, memory limits, ambiguity handling).
 
 ---
 
@@ -117,22 +123,26 @@ The full RAG pipeline is documented step-by-step in [`sherlock_rag_chatbot.ipynb
 
 ```
 sherlock-rag-chatbot/
-├── streamlit_app.py            # The Streamlit UI
+├── streamlit_app.py            # The Streamlit UI (v2.1)
 ├── sherlock_rag_chatbot.ipynb  # Annotated walkthrough of the RAG build
 ├── requirements.txt            # Python dependencies
 ├── data/
-│   └── sherlock_clean.txt      # Cleaned book text (Gutenberg boilerplate stripped)
-└── vector_index/               # Pre-built LlamaIndex store
+│   ├── sherlock_holmes.txt     # Raw Gutenberg text
+│   └── stories/                # Per-story text files (12 stories)
+└── vector_index_v2/            # Pre-built LlamaIndex store with story metadata
 ```
 
 ---
 
 ## 🎓 What I learned
 
-- **RAG grounding** — a good system prompt (*"answer using ONLY the provided context"*) is the difference between a bot that cites the book and one that hallucinates plausibly.
-- **Chunk size matters** — 512 tokens with 64-token overlap keeps semantic units together without stuffing the context window.
-- **Local embeddings save cost** — MiniLM runs on CPU with zero API calls, keeping the whole system on Groq's free tier.
-- **Session state ≠ shared state** — Streamlit's `session_state` gives each user their own conversation memory without any user-management code.
+- **RAG grounding is a prompt problem.** A strict, numbered system prompt (*"answer using ONLY the provided context"*) is the difference between a bot that cites the book and one that hallucinates plausibly.
+- **Retrieval is often the bottleneck**, not generation. Vague follow-ups like *"tell me more"* embed poorly and return random chunks. Query rewriting via `CondensePlusContextChatEngine` was the single biggest quality upgrade.
+- **Chunk size matters.** 512 tokens with 64-token overlap keeps semantic units together without stuffing the context window.
+- **Metadata unlocks better UX.** Tagging chunks with story titles turns anonymous citations into meaningful ones — *"from A Scandal in Bohemia"* instead of *"chunk #47"*.
+- **Local embeddings save cost.** MiniLM runs on CPU with zero API calls, keeping the whole system on Groq's free tier.
+- **Session state ≠ shared state.** Streamlit's `session_state` gives each user their own conversation memory without any user-management code.
+- **Handle failure loudly.** Wrapping the LLM call in try/except and adding a relevance floor turns unpredictable failures into clear, actionable messages.
 
 ---
 
